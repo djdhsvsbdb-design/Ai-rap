@@ -1,33 +1,36 @@
-# RAP//AI model training
+# RAP//AI — экспериментальное обучение
 
-This folder contains a small **starter** dataset and a LoRA fine-tuning script.
+Стартовый набор для LoRA fine-tuning открытой instruct-модели на **оригинальных** русскоязычных примерах. Это не означает, что модель уже обучена: после запуска появится адаптер в `training/output/rap-core-lora`.
 
-## Current status
+## Состав
 
-- The JSONL file contains a few original seed examples for testing the pipeline.
-- The script targets `Qwen/Qwen2.5-0.5B-Instruct`.
-- No model has been trained yet. A successful run requires a CUDA-enabled GPU runtime.
-- The browser app still uses the local procedural `RAP Core`; it does not load this adapter yet.
+- `data/rap_examples.jsonl` — небольшой демонстрационный датасет; его недостаточно для качественной специализированной модели.
+- `train_lora.py` — скрипт LoRA-обучения.
+- `validate_dataset.py` — базовая проверка JSONL.
+- `requirements.txt` — зависимости.
 
-## Run in a GPU notebook/runtime
+## Требования и запуск
 
-From the repository root:
+Нужен Python 3.10+ и среда с CUDA GPU и достаточной видеопамятью. Обычный GitHub Actions runner и GitHub Pages не обучают модель на GPU.
+
+Перед запуском проверьте лицензию и условия использования выбранной базовой модели. По умолчанию указан `Qwen/Qwen2.5-0.5B-Instruct` как пример; проверьте актуальную карточку модели. Модель можно переопределить через `RAP_BASE_MODEL`.
 
 ```bash
 pip install -r training/requirements.txt
+python training/validate_dataset.py
 python training/train_lora.py
 ```
 
-The output adapter is written to `training/output/rap-core-lora`. Keep generated model weights out of Git unless there is a deliberate reason to publish them; they can be large.
+Переменные окружения: `RAP_BASE_MODEL`, `RAP_DATA_PATH`, `RAP_OUTPUT_DIR`.
 
-## Improve the dataset
+## Формат датасета
 
-Add one JSON object per line to `data/rap_examples.jsonl` with:
-- `instruction`: a clear writing request (topic, style, form, mood, line count)
-- `output`: an original answer written for that request
+Каждая строка JSONL: `{"instruction":"Задание","output":"Оригинальный ответ"}`.
 
-Use only text you wrote or have permission to use. Do not add copyrighted song lyrics or imitate a specific living artist. Keep a separate validation set to compare outputs before and after fine-tuning.
+Добавляйте только тексты, на которые у вас есть права или которые вы сами написали. Не загружайте чужие песни или персональные данные.
 
-## Method
+## Следующие шаги
 
-The script uses supervised fine-tuning (SFT) with a LoRA adapter via Hugging Face TRL/PEFT. LoRA trains a small set of additional parameters while leaving the base model weights frozen. Training quality depends heavily on dataset size, variety, and quality.
+Расширьте датасет разнообразными оригинальными заданиями, выделите validation-набор, затем сравнивайте адаптер с базовой моделью на одинаковых тестах. Оценивайте естественность русского языка, ритм, соответствие запросу и оригинальность.
+
+Это технический прототип, а не готовая обученная нейросеть. Текущий браузерный RAP Core работает независимо; для подключения адаптера потребуется inference-сервис.
